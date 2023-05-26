@@ -29,11 +29,11 @@ class BaseTrainer:
         self.improved = False
 
         # SETTING THE DEVICE
-        self.device, availble_gpus = self._get_available_devices(self.config['n_gpu'])
+        self.device, availble_gpus, self.n_gpus = self._get_available_devices(self.config['n_gpu'])
         if config["use_synch_bn"]:
             self.model = convert_model(self.model)
             self.model = DataParallelWithCallback(self.model, device_ids=availble_gpus)
-        else:
+        elif self.n_gpus > 1:
             self.model = torch.nn.DataParallel(self.model, device_ids=availble_gpus)
         self.model.to(self.device)
 
@@ -93,7 +93,8 @@ class BaseTrainer:
         device = torch.device('cuda:0' if n_gpu > 0 else 'cpu')
         self.logger.info(f'Detected GPUs: {sys_gpu} Requested: {n_gpu}')
         available_gpus = list(range(n_gpu))
-        return device, available_gpus
+        n_gpus = len(available_gpus)
+        return device, available_gpus, n_gpus
     
     def train(self):
         for epoch in range(self.start_epoch, self.epochs+1):
@@ -134,12 +135,14 @@ class BaseTrainer:
             # SAVE CHECKPOINT
             if epoch % self.save_period == 0:
                 self._save_checkpoint(epoch, save_best=self.improved)
+            if self.improved:
+                self._save_best(epoch)
 
     def _save_checkpoint(self, epoch, save_best=False):
         state = {
             'arch': type(self.model).__name__,
             'epoch': epoch,
-            'state_dict': self.model.module.state_dict(),
+            'state_dict': self.model.module.state_dict() if self.n_gpus > 1 else self.model.state_dict(),
             'optimizer': self.optimizer.state_dict(),
             'monitor_best': self.mnt_best,
             'config': self.config
@@ -151,7 +154,27 @@ class BaseTrainer:
         if save_best:
             filename = os.path.join(self.checkpoint_dir, f'best_model.pth')
             torch.save(state, filename)
+
             self.logger.info("Saving current best: best_model.pth")
+    
+    def _save_best(self, epoch):
+        state = {
+            'arch': type(self.model).__name__,
+            'epoch': epoch,
+            'state_dict': self.model.module.state_dict() if self.n_gpus > 1 else self.model.state_dict(),
+            'optimizer': self.optimizer.state_dict(),
+            'monitor_best': self.mnt_best,
+            'config': self.config
+        }
+
+        filename = os.path.join(self.checkpoint_dir, f'best_model.pth')
+        torch.save(state, filename)
+
+        # Export best model to TorchScript
+        #model_scripted = torch.jit.script(self.model.to('cpu'))
+        #model_scripted.save(os.path.join(self.checkpoint_dir, f'best_model_scripted.pth'))
+
+        self.logger.info("Saving current best: best_model.pth")
 
     def _resume_checkpoint(self, resume_path):
         self.logger.info(f'Loading checkpoint : {resume_path}')

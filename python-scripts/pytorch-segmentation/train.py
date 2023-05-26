@@ -6,13 +6,12 @@ import dataloaders
 import models
 import inspect
 import math
+import tensorboard
 from utils import losses
 from utils import Logger
 from utils.torchsummary import summary
 from trainer import Trainer
 
-#torch.backends.cudnn.enabled = False
-#os.environ['CUDA_VISIBLE_DEVICES'] = '1,2'
 
 def get_instance(module, name, config, *args):
     # GET THE CORRESPONDING CLASS / FCT 
@@ -47,6 +46,11 @@ def main(config, resume):
         train_logger=train_logger)
 
     trainer.train()
+
+    model = get_instance(models, 'arch', config, train_loader.dataset.num_classes)
+    model.load_state_dict(torch.load(os.path.join(trainer.checkpoint_dir, f'best_model.pth'))['state_dict'])
+    model_scripted = torch.jit.script(model) 
+    model_scripted.save('best_model_scripted.pth')
 
 if __name__=='__main__':
     # PARSE THE ARGS
