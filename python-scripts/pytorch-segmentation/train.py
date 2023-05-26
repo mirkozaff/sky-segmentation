@@ -17,7 +17,7 @@ def get_instance(module, name, config, *args):
     # GET THE CORRESPONDING CLASS / FCT 
     return getattr(module, config[name]['type'])(*args, **config[name]['args'])
 
-def main(config, resume):
+def main(config, resume, pretrained):
     train_logger = Logger()
 
     # DATA LOADERS
@@ -31,6 +31,11 @@ def main(config, resume):
     # MODEL
     model = get_instance(models, 'arch', config, train_loader.dataset.num_classes)
     print(f'\n{model}\n')
+
+    # Load pretrained weights
+    if pretrained:
+        print(f'Loading pretrinaed weights: {pretrained}')
+        model.load_state_dict(torch.load(os.path.join(pretrained))['state_dict'])
 
     # LOSS
     loss = getattr(losses, config['loss'])(ignore_index = config['ignore_index'])
@@ -61,6 +66,8 @@ if __name__=='__main__':
                         help='Path to the .pth model checkpoint to resume training')
     parser.add_argument('-d', '--device', default=None, type=str,
                            help='indices of GPUs to enable (default: all)')
+    parser.add_argument('-p', '--pretrained', default=None, type=str,
+                           help='Path to the .pth pretrained model weights')
     args = parser.parse_args()
 
     config = json.load(open(args.config))
@@ -69,4 +76,4 @@ if __name__=='__main__':
     if args.device:
         os.environ["CUDA_VISIBLE_DEVICES"] = args.device
     
-    main(config, args.resume)
+    main(config, args.resume, args.pretrained)

@@ -1,5 +1,5 @@
 {
-    "name": "sky-segmentation",
+    "name": "sky-segmentation-cityscapes",
     "n_gpu": 1,
     "use_synch_bn": false,
 
@@ -16,7 +16,7 @@
         "type": "CityScapes",
         "args":{
             "data_dir": "/data/segmentation/autonomous-driving/cityscapes/",
-            "batch_size": 8,
+            "batch_size": 32,
             "base_size": 224,
             "crop_size": 200,
             "augment": true,
@@ -35,7 +35,7 @@
         "type": "CityScapes",
         "args":{
             "data_dir": "/data/segmentation/autonomous-driving/cityscapes/",
-            "batch_size": 8,
+            "batch_size": 32,
             "crop_size": 200,
             "val": true,
             "split": "val",
@@ -59,7 +59,7 @@
     },
 
     "trainer": {
-        "epochs": 1,
+        "epochs": 50,
         "save_dir": "saved/",
         "save_period": 10,
   
