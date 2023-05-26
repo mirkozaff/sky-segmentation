@@ -10,16 +10,23 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 
 ignore_label = 255
-ID_TO_TRAINID = {-1: ignore_label, 0: ignore_label, 1: ignore_label, 2: ignore_label,
-                    3: ignore_label, 4: ignore_label, 5: ignore_label, 6: ignore_label,
-                    7: 0, 8: 1, 9: ignore_label, 10: ignore_label, 11: 2, 12: 3, 13: 4,
-                    14: ignore_label, 15: ignore_label, 16: ignore_label, 17: 5,
-                    18: ignore_label, 19: 6, 20: 7, 21: 8, 22: 9, 23: 10, 24: 11, 25: 12, 26: 13, 27: 14,
-                    28: 15, 29: ignore_label, 30: ignore_label, 31: 16, 32: 17, 33: 18}
+# ID_TO_TRAINID = {-1: ignore_label, 0: ignore_label, 1: ignore_label, 2: ignore_label,
+#                     3: ignore_label, 4: ignore_label, 5: ignore_label, 6: ignore_label,
+#                     7: 0, 8: 1, 9: ignore_label, 10: ignore_label, 11: 2, 12: 3, 13: 4,
+#                     14: ignore_label, 15: ignore_label, 16: ignore_label, 17: 5,
+#                     18: ignore_label, 19: 6, 20: 7, 21: 8, 22: 9, 23: 10, 24: 11, 25: 12, 26: 13, 27: 14,
+#                     28: 15, 29: ignore_label, 30: ignore_label, 31: 16, 32: 17, 33: 18}
+
+ID_TO_TRAINID = {-1: 0, 0: 0, 1: 0, 2: 0,
+                    3: 0, 4: 0, 5: 0, 6: 0,
+                    7: 0, 8: 0, 9: 0, 10: 0, 11: 0, 12: 0, 13: 0,
+                    14: 0, 15: 0, 16: 0, 17: 0,
+                    18: 0, 19: 0, 20: 0, 21: 0, 22: 0, 23: 1, 24: 0, 25: 0, 26: 0, 27: 0,
+                    28: 0, 29: 0, 30: 0, 31: 0, 32: 0, 33: 0}
 
 class CityScapesDataset(BaseDataSet):
     def __init__(self, mode='fine', **kwargs):
-        self.num_classes = 19
+        self.num_classes = 2
         self.mode = mode
         self.palette = palette.CityScpates_palette
         self.id_to_trainId = ID_TO_TRAINID
@@ -34,9 +41,8 @@ class CityScapesDataset(BaseDataSet):
             img_dir_name = 'leftImg8bit_trainextra' if self.split == 'train_extra' else 'leftImg8bit_trainvaltest'
             label_path = os.path.join(self.root, 'gtCoarse', 'gtCoarse', self.split)
         else:
-            img_dir_name = 'leftImg8bit_trainvaltest'
-            label_path = os.path.join(self.root, 'gtFine_trainvaltest', 'gtFine', self.split)
-        image_path = os.path.join(self.root, img_dir_name, 'leftImg8bit', self.split)
+            label_path = os.path.join(self.root, 'gtFine', self.split)
+        image_path = os.path.join(self.root, 'leftImg8bit', self.split)
         assert os.listdir(image_path) == os.listdir(label_path)
 
         image_paths, label_paths = [], []
