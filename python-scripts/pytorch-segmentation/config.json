@@ -1,0 +1,76 @@
+{
+    "name": "training_name",
+    "n_gpu": 1,
+    "use_synch_bn": false,
+
+    "arch": {
+        "type": "UNet",
+        "args": {
+            "backbone": "resnet50",
+            "freeze_bn": false,
+            "freeze_backbone": true
+        }
+    },
+
+    "train_loader": {
+        "type": "COCO",
+        "args":{
+            "data_dir": "/mnt/data1/zaffaroni_data/COCO/",
+            "batch_size": 1,
+            "base_size": 224,
+            "crop_size": 200,
+            "augment": true,
+            "shuffle": false,
+            "scale": true,
+            "flip": true,
+            "rotate": true,
+            "blur": false,
+            "split": "train2017",
+            "val_split": 0.0,
+            "num_workers": 8
+        }
+    },
+
+    "val_loader": {
+        "type": "COCO",
+        "args":{
+            "data_dir": "/mnt/data1/zaffaroni_data/COCO/",
+            "batch_size": 1,
+            "crop_size": 200,
+            "val": true,
+            "split": "val2017",
+            "num_workers": 4
+        }
+    },
+
+    "optimizer": {
+        "type": "Adam",
+        "differential_lr": true,
+        "args":{
+            "lr": 0.001
+        }
+    },
+
+    "loss": "LovaszSoftmax",
+    "ignore_index": 255,
+    "lr_scheduler": {
+        "type": "Poly",
+        "args": {}
+    },
+
+    "trainer": {
+        "epochs": 80,
+        "save_dir": "saved/",
+        "save_period": 10,
+  
+        "monitor": "max Mean_IoU",
+        "early_stop": 10,
+        
+        "tensorboard": true,
+        "log_dir": "saved/runs",
+        "log_per_iter": 20,
+
+        "val": true,
+        "val_per_epochs": 1
+    }
+}
