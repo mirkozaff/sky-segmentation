@@ -2,7 +2,7 @@ import torch
 from torch.utils.mobile_optimizer import optimize_for_mobile
 
 # Load TorchScript model
-model = torch.jit.load('model_scripted.pt')
+model = torch.jit.load('best_model_scripted.pth')
 model.eval()
 
 # Optimize the model

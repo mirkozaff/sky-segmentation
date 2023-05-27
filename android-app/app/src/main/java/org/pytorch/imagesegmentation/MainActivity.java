@@ -33,13 +33,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
     private ProgressBar mProgressBar;
     private Bitmap mBitmap = null;
     private Module mModule = null;
-    private String mImagename = "deeplab.jpg";
+    private String mImagename = "sky.jpg";
 
     // see http://host.robots.ox.ac.uk:8080/pascal/VOC/voc2007/segexamples/index.html for the list of classes with indexes
-    private static final int CLASSNUM = 21;
-    private static final int DOG = 12;
-    private static final int PERSON = 15;
-    private static final int SHEEP = 17;
+    private static final int CLASSNUM = 2;
+    private static final int SKY = 1;
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -78,10 +76,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final Button buttonRestart = findViewById(R.id.restartButton);
         buttonRestart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (mImagename == "deeplab.jpg")
-                    mImagename = "dog.jpg";
+                if (mImagename == "sky.jpg")
+                    mImagename = "sky2.jpg";
                 else
-                    mImagename = "deeplab.jpg";
+                    mImagename = "sky.jpg";
                 try {
                     mBitmap = BitmapFactory.decodeStream(getAssets().open(mImagename));
                     mImageView.setImageBitmap(mBitmap);
@@ -107,7 +105,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
 
         try {
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted_optimized.ptl"));
+            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "model_scripted_optimized.ptl"));
         } catch (IOException e) {
             Log.e("ImageSegmentation", "Error reading assets", e);
             finish();
@@ -121,11 +119,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final float[] inputs = inputTensor.getDataAsFloatArray();
 
         final long startTime = SystemClock.elapsedRealtime();
-        Map<String, IValue> outTensors = mModule.forward(IValue.from(inputTensor)).toDictStringKey();
+        IValue model_output = mModule.forward(IValue.from(inputTensor));
         final long inferenceTime = SystemClock.elapsedRealtime() - startTime;
         Log.d("ImageSegmentation",  "inference time (ms): " + inferenceTime);
 
-        final Tensor outputTensor = outTensors.get("out").toTensor();
+        final Tensor outputTensor = model_output.toTensor();
         final float[] scores = outputTensor.getDataAsFloatArray();
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight();
@@ -141,12 +139,8 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                         maxi = i; maxj = j; maxk = k;
                     }
                 }
-                if (maxi == PERSON)
-                    intValues[maxj * width + maxk] = 0xFFFF0000;
-                else if (maxi == DOG)
-                    intValues[maxj * width + maxk] = 0xFF00FF00;
-                else if (maxi == SHEEP)
-                    intValues[maxj * width + maxk] = 0xFF0000FF;
+                if (maxi == SKY)
+                    intValues[maxj * width + maxk] = 0xFFFFFFFF;
                 else
                     intValues[maxj * width + maxk] = 0xFF000000;
             }
