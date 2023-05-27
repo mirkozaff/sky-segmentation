@@ -171,8 +171,3 @@ Config files are in `.json` format:
     }
 }
 ```
-
-## Acknowledgement
-- [PyTorch-Encoding](https://github.com/zhanghang1989/PyTorch-Encoding)
-- [Pytorch-Template](https://github.com/victoresque/pytorch-template/blob/master/README.m)
-- [Synchronized-BatchNorm-PyTorch](https://github.com/vacancy/Synchronized-BatchNorm-PyTorch)

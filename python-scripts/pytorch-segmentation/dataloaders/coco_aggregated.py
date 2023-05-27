@@ -20,7 +20,7 @@ class CocoStuff10k(BaseDataSet):
 
     def _set_files(self):
         file_list = sorted(glob(os.path.join(self.root, 'images', '*.jpg')))
-        self.files = [os.path.basename(f).split('.')[0] for f in file_list][:500]
+        self.files = [os.path.basename(f).split('.')[0] for f in file_list]
         temp = []
         n_images = 0
         for image_id in tqdm(self.files):
@@ -58,11 +58,11 @@ def get_parent_class(value, dictionary):
 
 class COCO_agg(BaseDataLoader):
     def __init__(self, data_dir, batch_size, split, crop_size=None, base_size=None, scale=True, num_workers=1,
-                    shuffle=False, flip=False, rotate=False, blur= False, augment=False, val_split= None, return_id=False, val=False):
+                    shuffle=False, flip=False, rotate=False, blur= False, augment=False, val_split= None, return_id=False, val=False, inference = False):
 
         self.MEAN = [0.43931922, 0.41310471, 0.37480941]
         self.STD = [0.24272706, 0.23649098, 0.23429529]
-
+        
         kwargs = {
             'root': data_dir,
             'split': split,
@@ -76,7 +76,8 @@ class COCO_agg(BaseDataLoader):
             'blur': blur,
             'rotate': rotate,
             'return_id': return_id,
-            'val': val
+            'val': val,
+            'inference': inference
         }
 
         self.dataset = CocoStuff10k(**kwargs)

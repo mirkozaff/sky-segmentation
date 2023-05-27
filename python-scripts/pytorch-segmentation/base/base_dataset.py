@@ -9,7 +9,7 @@ from scipy import ndimage
 
 class BaseDataSet(Dataset):
     def __init__(self, root, split, mean, std, base_size=None, augment=True, val=False,
-                crop_size=321, scale=True, flip=True, rotate=False, blur=False, return_id=False):
+                crop_size=321, scale=True, flip=True, rotate=False, blur=False, return_id=False, inference = False):
         self.root = root
         self.split = split
         self.mean = mean
@@ -24,7 +24,8 @@ class BaseDataSet(Dataset):
             self.blur = blur
         self.val = val
         self.files = []
-        self._set_files()
+        if not inference:
+            self._set_files()
         self.to_tensor = transforms.ToTensor()
         self.normalize = transforms.Normalize(mean, std)
         self.return_id = return_id

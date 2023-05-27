@@ -16,7 +16,7 @@
         "type": "COCO_agg",
         "args":{
             "data_dir": "/data/coco_dataset/coco10k/",
-            "batch_size": 8,
+            "batch_size": 32,
             "base_size": 224,
             "crop_size": 200,
             "augment": true,
@@ -35,7 +35,7 @@
         "type": "COCO_agg",
         "args":{
             "data_dir": "/data/coco_dataset/coco10k/",
-            "batch_size": 8,
+            "batch_size": 32,
             "crop_size": 200,
             "val": true,
             "split": "val2017",

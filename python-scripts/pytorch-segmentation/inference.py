@@ -14,7 +14,8 @@ from glob import glob
 from PIL import Image
 import dataloaders
 import models
-from utils.helpers import colorize_mask
+from utils.helpers import colorize_mask, dir_exists
+from utils.palette import inference_palette
 
 def pad_image(img, target_size):
     rows_to_pad = max(target_size[0] - img.shape[2], 0)
@@ -85,15 +86,13 @@ def save_images(image, mask, output_path, image_file, palette):
     colorized_mask = colorize_mask(mask, palette)
     colorized_mask.save(os.path.join(output_path, image_file+'.png'))
 
+    binary_mask = colorize_mask(mask, inference_palette)
+    binary_mask.save(os.path.join(output_path, image_file+'_binary.png'))
+
     overlayed_mask = Image.blend(image.convert("RGBA"), colorized_mask.convert("RGBA"), alpha=.4)
+    dir_exists(os.path.join(output_path, 'overlayed'))
     overlayed_mask.save(os.path.join(output_path, 'overlayed', image_file+'.png'))
 
-    # output_im = Image.new('RGB', (w*2, h))
-    # output_im.paste(image, (0,0))
-    # output_im.paste(colorized_mask, (w,0))
-    # output_im.save(os.path.join(output_path, image_file+'_colorized.png'))
-    # mask_img = Image.fromarray(mask, 'L')
-    # mask_img.save(os.path.join(output_path, image_file+'.png'))
 
 def main():
     args = parse_arguments()
@@ -106,7 +105,7 @@ def main():
         scales = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0, 2.25] 
     else:
         scales = [0.75, 1.0, 1.25, 1.5, 1.75, 2.0]
-    loader = getattr(dataloaders, config['train_loader']['type'])(**config['train_loader']['args'])
+    loader = getattr(dataloaders, config['train_loader']['type'])(**config['train_loader']['args'], inference = True)
     to_tensor = transforms.ToTensor()
     normalize = transforms.Normalize(loader.MEAN, loader.STD)
     num_classes = loader.dataset.num_classes
