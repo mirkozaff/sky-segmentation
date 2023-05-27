@@ -3,6 +3,7 @@ package org.pytorch.imagesegmentation;
 import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
+import android.content.res.AssetManager;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
@@ -12,6 +13,7 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 
 import org.pytorch.IValue;
 import org.pytorch.LiteModuleLoader;
@@ -24,22 +26,21 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.util.Map;
 
 
 public class MainActivity extends AppCompatActivity implements Runnable {
     private ImageView mImageView;
+    private ImageView mImageViewOverlay;
     private Button mButtonSegment;
     private ProgressBar mProgressBar;
+    private TextView mInferenceText;
     private Bitmap mBitmap = null;
     private Module mModule = null;
-    private String mImagename = "deeplab.jpg";
+    private int mImageNumber = 0;
 
     // see http://host.robots.ox.ac.uk:8080/pascal/VOC/voc2007/segexamples/index.html for the list of classes with indexes
-    private static final int CLASSNUM = 21;
-    private static final int DOG = 12;
-    private static final int PERSON = 15;
-    private static final int SHEEP = 17;
+    private static final int CLASSNUM = 2;
+    private static final int SKY = 1;
 
     public static String assetFilePath(Context context, String assetName) throws IOException {
         File file = new File(context.getFilesDir(), assetName);
@@ -60,13 +61,24 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         }
     }
 
+    public String[] imageList() {
+        AssetManager am = getAssets();
+        String fileList[] = new String[0];
+        try {
+            fileList = am.list("input_images");
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+        return fileList;
+    }
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
         try {
-            mBitmap = BitmapFactory.decodeStream(getAssets().open(mImagename));
+            mBitmap = BitmapFactory.decodeStream(getAssets().open("input_images/" + imageList()[0]));
         } catch (IOException e) {
             Log.e("ImageSegmentation", "Error reading assets", e);
             finish();
@@ -75,15 +87,23 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         mImageView = findViewById(R.id.imageView);
         mImageView.setImageBitmap(mBitmap);
 
+        mImageViewOverlay = findViewById(R.id.imageViewOverlay);
+
+        mInferenceText = findViewById(R.id.inferenceTimeText);
+
         final Button buttonRestart = findViewById(R.id.restartButton);
         buttonRestart.setOnClickListener(new View.OnClickListener() {
             public void onClick(View v) {
-                if (mImagename == "deeplab.jpg")
-                    mImagename = "dog.jpg";
+                String fileList[] = imageList();
+                String imageName;
+                if (mImageNumber < fileList.length-1)
+                    mImageNumber++;
                 else
-                    mImagename = "deeplab.jpg";
+                    mImageNumber = 0;
+                imageName = fileList[mImageNumber];
                 try {
-                    mBitmap = BitmapFactory.decodeStream(getAssets().open(mImagename));
+                    mBitmap = BitmapFactory.decodeStream(getAssets().open("input_images/" + imageName));
+                    mImageViewOverlay.setVisibility(ImageView.INVISIBLE);
                     mImageView.setImageBitmap(mBitmap);
                 } catch (IOException e) {
                     Log.e("ImageSegmentation", "Error reading assets", e);
@@ -91,7 +111,6 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                 }
             }
         });
-
 
         mButtonSegment = findViewById(R.id.segmentButton);
         mProgressBar = (ProgressBar) findViewById(R.id.progressBar);
@@ -107,7 +126,7 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         });
 
         try {
-            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "deeplabv3_scripted_optimized.ptl"));
+            mModule = LiteModuleLoader.load(MainActivity.assetFilePath(getApplicationContext(), "model_scripted_optimized.ptl"));
         } catch (IOException e) {
             Log.e("ImageSegmentation", "Error reading assets", e);
             finish();
@@ -121,11 +140,11 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         final float[] inputs = inputTensor.getDataAsFloatArray();
 
         final long startTime = SystemClock.elapsedRealtime();
-        Map<String, IValue> outTensors = mModule.forward(IValue.from(inputTensor)).toDictStringKey();
+        IValue model_output = mModule.forward(IValue.from(inputTensor));
         final long inferenceTime = SystemClock.elapsedRealtime() - startTime;
         Log.d("ImageSegmentation",  "inference time (ms): " + inferenceTime);
 
-        final Tensor outputTensor = outTensors.get("out").toTensor();
+        final Tensor outputTensor = model_output.toTensor();
         final float[] scores = outputTensor.getDataAsFloatArray();
         int width = mBitmap.getWidth();
         int height = mBitmap.getHeight();
@@ -141,14 +160,10 @@ public class MainActivity extends AppCompatActivity implements Runnable {
                         maxi = i; maxj = j; maxk = k;
                     }
                 }
-                if (maxi == PERSON)
-                    intValues[maxj * width + maxk] = 0xFFFF0000;
-                else if (maxi == DOG)
-                    intValues[maxj * width + maxk] = 0xFF00FF00;
-                else if (maxi == SHEEP)
-                    intValues[maxj * width + maxk] = 0xFF0000FF;
+                if (maxi == SKY)
+                    intValues[maxj * width + maxk] = 0x80E28743;
                 else
-                    intValues[maxj * width + maxk] = 0xFF000000;
+                    intValues[maxj * width + maxk] = 0x801E81B0;
             }
         }
 
@@ -156,15 +171,17 @@ public class MainActivity extends AppCompatActivity implements Runnable {
         Bitmap outputBitmap = bmpSegmentation.copy(bmpSegmentation.getConfig(), true);
         outputBitmap.setPixels(intValues, 0, outputBitmap.getWidth(), 0, 0, outputBitmap.getWidth(), outputBitmap.getHeight());
         final Bitmap transferredBitmap = Bitmap.createScaledBitmap(outputBitmap, mBitmap.getWidth(), mBitmap.getHeight(), true);
+        mInferenceText.setText("Inference time: " + inferenceTime + " (ms)");
 
         runOnUiThread(new Runnable() {
             @Override
             public void run() {
-                mImageView.setImageBitmap(transferredBitmap);
+                mImageViewOverlay.setImageBitmap(transferredBitmap);
                 mButtonSegment.setEnabled(true);
                 mButtonSegment.setText(getString(R.string.segment));
                 mProgressBar.setVisibility(ProgressBar.INVISIBLE);
-
+                mInferenceText.setVisibility(TextView.VISIBLE);
+                mImageViewOverlay.setVisibility(ImageView.VISIBLE);
             }
         });
     }
