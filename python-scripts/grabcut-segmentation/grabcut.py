@@ -42,6 +42,7 @@ def main(args):
     img_masked = img_masked*mask_refined[:,:,np.newaxis]
     plt.imshow(img_masked[:,:,::-1]),plt.colorbar(),plt.show()
 
+    # Plotting results
     f, axarr = plt.subplots(2,2)
     axarr[0,0].plot()
     axarr[0, 0].set_title("Original image")
@@ -58,18 +59,15 @@ def main(args):
     plt.show(block=True)
 
     # Save binary mask
-    h, w = mask_refined.shape
-    #mask_binary = mask_refined.reshape(h, w, 1)
-    #_, blackAndWhiteImage = cv.threshold(mask_binary, 127, 255, cv.THRESH_BINARY)
     plt.imsave(f'{args.input_image}_binary.jpg', mask_refined, cmap='binary')
 
 if __name__=='__main__':
     # PARSE THE ARGS
     parser = argparse.ArgumentParser(description='GrubCut algorithm')
     parser.add_argument('-i', '--input_image', default='Immagine10.jpg',type=str,
-                        help='Path to the config file (default: config.json)')
+                        help='Path to the input image (default: Immagine10.jpg)')
     parser.add_argument('-m', '--mask', default='Immagine10_mask.jpg', type=str,
-                        help='Path to the .pth model checkpoint to resume training')
+                        help='Path to the input mask image (default: Immagine10_mask.jpg)')
     args = parser.parse_args()
 
     main(args)
