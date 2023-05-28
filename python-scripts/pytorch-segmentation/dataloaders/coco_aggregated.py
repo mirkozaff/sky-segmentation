@@ -21,18 +21,18 @@ class CocoStuff10k(BaseDataSet):
     def _set_files(self):
         file_list = sorted(glob(os.path.join(self.root, 'images', '*.jpg')))
         self.files = [os.path.basename(f).split('.')[0] for f in file_list]
-        temp = []
-        n_images = 0
-        for image_id in tqdm(self.files):
-            label_path = os.path.join(self.root, 'annotations', image_id + '.png')
-            label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
-            # If image contains sky or clouds pixels use it
-            if (np.sum(label) > 1):
-                n_images += 1                    
-                temp.append(image_id)
-        print(f"#image: {n_images}")
-        # Update file list
-        self.files = temp[:]
+        # temp = []
+        # n_images = 0
+        # for image_id in tqdm(self.files):
+        #     label_path = os.path.join(self.root, 'annotations', image_id + '.png')
+        #     label = cv2.imread(label_path, cv2.IMREAD_GRAYSCALE)
+        #     # If image contains sky or clouds pixels use it
+        #     if (np.sum(label) > 1):
+        #         n_images += 1                    
+        #         temp.append(image_id)
+        # print(f"#image: {n_images}")
+        # # Update file list
+        # self.files = temp[:]
 
     def _load_data(self, index):
         image_id = self.files[index]
