@@ -10,12 +10,6 @@ from torch.utils.data import Dataset
 from torchvision import transforms
 
 ignore_label = 255
-# ID_TO_TRAINID = {-1: ignore_label, 0: ignore_label, 1: ignore_label, 2: ignore_label,
-#                     3: ignore_label, 4: ignore_label, 5: ignore_label, 6: ignore_label,
-#                     7: 0, 8: 1, 9: ignore_label, 10: ignore_label, 11: 2, 12: 3, 13: 4,
-#                     14: ignore_label, 15: ignore_label, 16: ignore_label, 17: 5,
-#                     18: ignore_label, 19: 6, 20: 7, 21: 8, 22: 9, 23: 10, 24: 11, 25: 12, 26: 13, 27: 14,
-#                     28: 15, 29: ignore_label, 30: ignore_label, 31: 16, 32: 17, 33: 18}
 
 ID_TO_TRAINID = {-1: 0, 0: 0, 1: 0, 2: 0,
                     3: 0, 4: 0, 5: 0, 6: 0,
@@ -61,10 +55,9 @@ class CityScapesDataset(BaseDataSet):
         return image, label, image_id
 
 
-
 class CityScapes(BaseDataLoader):
     def __init__(self, data_dir, batch_size, split, crop_size=None, base_size=None, scale=True, num_workers=1, mode='fine', val=False,
-                    shuffle=False, flip=False, rotate=False, blur= False, augment=False, val_split= None, return_id=False):
+                    shuffle=False, flip=False, rotate=False, blur= False, augment=False, val_split= None, return_id=False, inference = False):
 
         self.MEAN = [0.28689529, 0.32513294, 0.28389176]
         self.STD = [0.17613647, 0.18099176, 0.17772235]
@@ -82,10 +75,9 @@ class CityScapes(BaseDataLoader):
             'blur': blur,
             'rotate': rotate,
             'return_id': return_id,
-            'val': val
+            'val': val,
+            'inference': inference
         }
 
         self.dataset = CityScapesDataset(mode=mode, **kwargs)
         super(CityScapes, self).__init__(self.dataset, batch_size, shuffle, num_workers, val_split)
-
-
