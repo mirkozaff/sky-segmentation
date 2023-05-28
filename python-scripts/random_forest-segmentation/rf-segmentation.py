@@ -1,7 +1,7 @@
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
-from skimage import data, segmentation, feature, future
+from skimage import segmentation, feature, future
 from sklearn.ensemble import RandomForestClassifier
 from functools import partial
 
@@ -48,7 +48,7 @@ def main(args):
 
 if __name__=='__main__':
     # PARSE THE ARGS
-    parser = argparse.ArgumentParser(description='GrubCut algorithm')
+    parser = argparse.ArgumentParser(description='Random Forest segmentation algorithm')
     parser.add_argument('-i', '--input_image', default='Immagine10.jpg',type=str,
                         help='Path to the input image (default: Immagine10.jpg)')
     args = parser.parse_args()
