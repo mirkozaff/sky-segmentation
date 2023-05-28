@@ -15,7 +15,8 @@ def main(args):
 
     # Draw the rectangle containing all the object of interest
     # Everything outside is marked ad background
-    rect = (0,0,900,160)
+    h, w, _ = img.shape
+    rect = (0, 0, w, h//3)
     cv.grabCut(img,mask_refined,rect,bgdModel,fgdModel,5,cv.GC_INIT_WITH_RECT)
 
     # First segmentation based on the rectangle area
@@ -50,10 +51,10 @@ def main(args):
     axarr[0,1].imshow(img_masked[:,:,::-1])
     axarr[1,0].plot()
     axarr[1,0].set_title("Coarse mask")
-    axarr[1,0].imshow(mask_refined)
+    axarr[1,0].imshow(mask_coarse)
     axarr[1,1].plot()
     axarr[1,1].set_title("Refined mask")
-    axarr[1,1].imshow(mask_coarse)
+    axarr[1,1].imshow(mask_refined)
     plt.show(block=True)
 
     # Save binary mask
