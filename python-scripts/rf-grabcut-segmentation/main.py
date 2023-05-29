@@ -33,7 +33,7 @@ def main(args):
         output_path = args.output_dir
         if not os.path.exists(output_path):
             os.makedirs(output_path)
-        plt.imsave(os.path.join(output_path, f'{im}_binary.jpg'), mask_refined, cmap='binary')
+        plt.imsave(os.path.join(output_path, f'{im.split(".")[0]}_binary.png'), mask_refined, cmap='binary')
 
 if __name__=='__main__':
     # PARSE THE ARGS

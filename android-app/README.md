@@ -10,3 +10,5 @@ This repo offers a Python script that converts the a DeepLabV3 model to the Lite
 * Python 3.8 or above (Optional)
 * Android Pytorch library pytorch_android_lite:1.10.0, pytorch_android_torchvision_lite:1.10.0
 * Android Studio 4.0.1 or later
+
+Download the model at the following link and put it in the assets folder: https://drive.google.com/file/d/1Bnnzr9-rIDcDj8RjyWT0aCQ6NexhQ4JZ/view?usp=drive_link

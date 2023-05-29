@@ -59,7 +59,7 @@ def main(args):
     plt.show(block=True)
 
     # Save binary mask
-    plt.imsave(f'{args.input_image}_binary.jpg', mask_refined, cmap='binary')
+    plt.imsave(f'{args.input_image.split(".")[0]}_binary.png', mask_refined, cmap='binary')
 
 if __name__=='__main__':
     # PARSE THE ARGS
